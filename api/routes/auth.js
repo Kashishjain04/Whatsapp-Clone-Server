@@ -100,4 +100,36 @@ router.post("/signin", (req, res) => {
     });
 });
 
+router.post("/googleLogin", (req, res) => {
+  User.findOne({ googleId: req.body.googleId })
+    .then((user) => {
+      if (user) {
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        const { _id, name, email, pic, rooms } = user;
+        res.json({
+          message: "Signed In Successfully",
+          token,
+          user: { _id, name, email, pic, rooms },
+        });
+      } else {
+        User.create(req.body)
+          .then((user) => {
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+            const { _id, name, email, pic } = user;
+            res.json({
+              message: "Signed In Successfully",
+              token,
+              user: { _id, name, email, pic },
+            });
+          })
+          .catch((err) => {
+            return res.status(422).json({
+              error: err.message,
+            });
+          });
+      }
+    })
+    .catch((err) => console.log(err));
+});
+
 export default router;

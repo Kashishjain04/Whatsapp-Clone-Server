@@ -109,32 +109,3 @@ router.get("/getUserData", requireLogin, (req, res) => {
 });
 
 export default router;
-
-// router.post("/addRoom", requireLogin, (req, res) => {
-//   Rooms.findOne({ _id: req.body.roomID })
-//     .populate({
-//       path: "messages",
-//       populate: {
-//         path: "user",
-//         select: "_id name email",
-//       },
-//     })
-//     .then((room) => {
-//       if (room) {
-//         Users.findByIdAndUpdate(
-//           req.user._id,
-//           { $addToSet: { rooms: room } },
-//           (err, doc) => {
-//             if (err) {
-//               return res.status(500).send(err);
-//             } else {
-//               res.send("Room added Successfully!!");
-//             }
-//           }
-//         );
-//       } else {
-//         res.status(400).send("Room not found!!");
-//       }
-//     })
-//     .catch((err) => console.log(err));
-// });

@@ -54,21 +54,28 @@ db.once("open", () => {
   const roomCollection = db.collection("rooms");
   const changeStream = roomCollection.watch();
   changeStream.on("change", (change) => {
-    switch (change.operationType) {
-      case "update":
-        pusher
-          .trigger("room", "updated", {
-            key: change.documentKey._id,
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
-        break;
+    pusher
+      .trigger("room", "updated", {
+        key: change.documentKey._id,
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+    // switch (change.operationType) {
+    //   case "update":
+    //     pusher
+    //       .trigger("room", "updated", {
+    //         key: change.documentKey._id,
+    //       })
+    //       .catch((err) => {
+    //         console.log(err.message);
+    //       });
+    //     break;
 
-      default:
-        console.log("Error Triggering Pusher");
-        break;
-    }
+    //   default:
+    //     console.log("Error Triggering Pusher");
+    //     break;
+    // }
   });
 });
 
