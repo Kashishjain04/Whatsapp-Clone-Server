@@ -60,13 +60,6 @@ router.post("/signin", (req, res) => {
   User.findOne({ email: email })
     .populate({
       path: "rooms",
-      populate: {
-        path: "messages",
-        populate: {
-          path: "user",
-          select: "_id name email",
-        },
-      },
     })
     .then((user) => {
       // User not found

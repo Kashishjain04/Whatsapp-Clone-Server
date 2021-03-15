@@ -14,7 +14,7 @@ const app = express();
 dotenv.config();
 app.use(
   session({
-    secret: "thisismekashishjain",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: "auto" },
@@ -25,9 +25,9 @@ app.use(passport.session());
 
 // pusher (to make db realtime)
 const pusher = new Pusher({
-  appId: "1130959",
-  key: "2d590458214a61134be0",
-  secret: "db7a8adcb830514a975f",
+  appId: process.env.PUSHER_APPID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
   cluster: "ap2",
   useTLS: true,
 });
@@ -52,30 +52,33 @@ db.once("open", () => {
   console.log("✅ MongoDB connected");
   // const msgCollection = db.collection("messages");
   const roomCollection = db.collection("rooms");
-  const changeStream = roomCollection.watch();
+  const changeStream = roomCollection.watch({ fullDocument: "updateLookup" });
   changeStream.on("change", (change) => {
-    pusher
-      .trigger("room", "updated", {
-        key: change.documentKey._id,
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-    // switch (change.operationType) {
-    //   case "update":
-    //     pusher
-    //       .trigger("room", "updated", {
-    //         key: change.documentKey._id,
-    //       })
-    //       .catch((err) => {
-    //         console.log(err.message);
-    //       });
-    //     break;
+    switch (change.operationType) {
+      case "update":
+        pusher
+          .trigger("room", "updated", {
+            key: change.documentKey._id,
+            room: change.fullDocument,
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+        break;
+      case "insert":
+        pusher
+          .trigger("room", "inserted", {
+            room: change.fullDocument,
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+        break;
 
-    //   default:
-    //     console.log("Error Triggering Pusher");
-    //     break;
-    // }
+      default:
+        console.log("Error Triggering Pusher");
+        break;
+    }
   });
 });
 
