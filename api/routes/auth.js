@@ -79,7 +79,7 @@ router.post("/signin", (req, res) => {
             res.json({
               message: "Signed In Successfully",
               token,
-              user: { _id, name, email, pic, rooms },
+              user: { _id, name, email, pic, rooms, isGoogle: false },
             });
           } else {
             return res.status(422).json({
@@ -102,17 +102,17 @@ router.post("/googleLogin", (req, res) => {
         res.json({
           message: "Signed In Successfully",
           token,
-          user: { _id, name, email, pic, rooms },
+          user: { _id, name, email, pic, rooms, isGoogle: true },
         });
       } else {
         User.create(req.body)
           .then((user) => {
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-            const { _id, name, email, pic } = user;
+            const { _id, name, email, pic, rooms } = user;
             res.json({
               message: "Signed In Successfully",
               token,
-              user: { _id, name, email, pic },
+              user: { _id, name, email, rooms, pic, isGoogle: true },
             });
           })
           .catch((err) => {
@@ -123,6 +123,45 @@ router.post("/googleLogin", (req, res) => {
       }
     })
     .catch((err) => console.log(err));
+});
+
+router.put("/profileImage", requireLogin, async (req, res) => {
+  const { user } = req;
+  try {
+    await User.findByIdAndUpdate(user._id, { pic: req.body.url });
+    User.findById(user._id)
+      .populate("rooms")
+      .then((user) => res.send(user))
+      .catch((err) => console.log(err));
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/profileName", requireLogin, async (req, res) => {
+  const { user } = req;
+  try {
+    await User.findByIdAndUpdate(user._id, { name: req.body.name });
+    User.findById(user._id)
+      .populate("rooms")
+      .then((user) => res.send(user))
+      .catch((err) => console.log(err));
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.delete("/profileImage", requireLogin, async (req, res) => {
+  const { user } = req;
+  try {
+    await User.findByIdAndUpdate(user._id, { pic: "" });
+    User.findById(user._id)
+      .populate("rooms")
+      .then((user) => res.send(user))
+      .catch((err) => console.log(err));
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 export default router;
