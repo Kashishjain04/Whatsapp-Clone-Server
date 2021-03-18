@@ -6,7 +6,7 @@ import Users from "../models/user.js";
 // initialize router
 const router = express.Router();
 
-router.post("/new", requireLogin, (req, res) => {
+router.post("/newMessage", requireLogin, (req, res) => {
   const { message, timestamp } = req.body;
   Rooms.findByIdAndUpdate(
     req.body.roomID,

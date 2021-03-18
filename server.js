@@ -3,8 +3,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import Pusher from "pusher";
-import IMPORTED_ROUTES_DB from "./api/routes/route.js";
+import IMPORTED_ROUTES_ROOMS from "./api/routes/rooms.js";
 import IMPORTED_ROUTES_AUTH from "./api/routes/auth.js";
+import IMPORTED_ROUTES_EXTRAS from "./api/routes/extras.js";
 import passport from "passport";
 import session from "express-session";
 import rooms from "./api/models/rooms.js";
@@ -98,7 +99,8 @@ app.get("/", (req, res) => {
     .then((data) => console.log(data));
   res.send("Hello World - Express.js");
 });
-app.use("/messages", IMPORTED_ROUTES_DB);
+app.use("/rooms", IMPORTED_ROUTES_ROOMS);
 app.use("/auth", IMPORTED_ROUTES_AUTH);
+app.use("/extras", IMPORTED_ROUTES_EXTRAS);
 
 app.listen(PORT, () => console.log(`✅ Server is listening on port: ${PORT}`));

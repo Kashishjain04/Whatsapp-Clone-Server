@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import requireLogin from "../middleware/requireLogin.js";
+import { v2 as cloudinary } from "cloudinary";
 
 // initialize router
 const router = express.Router();
@@ -138,10 +139,15 @@ router.put("/profileImage", requireLogin, async (req, res) => {
   }
 });
 
-router.put("/profileName", requireLogin, async (req, res) => {
+router.delete("/profileImage", requireLogin, async (req, res) => {
   const { user } = req;
   try {
-    await User.findByIdAndUpdate(user._id, { name: req.body.name });
+    await User.findByIdAndUpdate(user._id, { pic: "" });
+    cloudinary.uploader.destroy(`whatsapp/${user.email}`, {
+      api_key: process.env.CLOUDINARY_KEY,
+      api_secret: process.env.CLOUDINARY_SECRET,
+      cloud_name: "kashish",
+    });
     User.findById(user._id)
       .populate("rooms")
       .then((user) => res.send(user))
@@ -151,10 +157,10 @@ router.put("/profileName", requireLogin, async (req, res) => {
   }
 });
 
-router.delete("/profileImage", requireLogin, async (req, res) => {
+router.put("/profileName", requireLogin, async (req, res) => {
   const { user } = req;
   try {
-    await User.findByIdAndUpdate(user._id, { pic: "" });
+    await User.findByIdAndUpdate(user._id, { name: req.body.name });
     User.findById(user._id)
       .populate("rooms")
       .then((user) => res.send(user))
