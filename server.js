@@ -51,33 +51,60 @@ const DEPRECATED_FIX = {
 
 db.once("open", () => {
   console.log("✅ MongoDB connected");
-  // const msgCollection = db.collection("messages");
   const roomCollection = db.collection("rooms");
-  const changeStream = roomCollection.watch({ fullDocument: "updateLookup" });
-  changeStream.on("change", (change) => {
+  const roomStream = roomCollection.watch();
+
+  roomStream.on("change", (change) => {
     switch (change.operationType) {
       case "update":
-        pusher
-          .trigger("room", "updated", {
-            key: change.documentKey._id,
-            room: change.fullDocument,
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
-        break;
-      case "insert":
-        pusher
-          .trigger("room", "inserted", {
-            room: change.fullDocument,
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
+        if (Object.keys(change.updateDescription.updatedFields)[0] === "pic") {
+          pusher
+            .trigger("room", "picUpdated", {
+              key: change.documentKey._id,
+              picURL: change.updateDescription.updatedFields.pic,
+            })
+            .catch((err) => {
+              console.log(err.message);
+            });
+        } else {
+          const newMsg = Object.values(
+            change.updateDescription.updatedFields
+          )[0];
+          pusher
+            .trigger("room", "updated", {
+              key: change.documentKey._id,
+              newMsg,
+            })
+            .catch((err) => {
+              console.log(err.message);
+            });
+        }
         break;
 
       default:
-        console.log("Error Triggering Pusher");
+        break;
+    }
+  });
+
+  const userCollection = db.collection("users");
+  const userStream = userCollection.watch();
+
+  userStream.on("change", (change) => {
+    switch (change.operationType) {
+      case "update":
+        if (Object.keys(change.updateDescription.updatedFields)[0] === "pic") {
+          pusher
+            .trigger("user", "picUpdated", {
+              key: change.documentKey._id,
+              picURL: change.updateDescription.updatedFields.pic,
+            })
+            .catch((err) => {
+              console.log(err.message);
+            });
+        }
+        break;
+
+      default:
         break;
     }
   });

@@ -128,46 +128,35 @@ router.post("/googleLogin", (req, res) => {
 
 router.put("/profileImage", requireLogin, async (req, res) => {
   const { user } = req;
-  try {
-    await User.findByIdAndUpdate(user._id, { pic: req.body.url });
-    User.findById(user._id)
-      .populate("rooms")
-      .then((user) => res.send(user))
-      .catch((err) => console.log(err));
-  } catch (error) {
-    console.log(error);
-  }
+  User.findByIdAndUpdate(user._id, { pic: req.body.url })
+    .then(() => res.send("Profile picture updated successfully!!"))
+    .catch((err) => console.log(err));
 });
 
 router.delete("/profileImage", requireLogin, async (req, res) => {
   const { user } = req;
-  try {
-    await User.findByIdAndUpdate(user._id, { pic: "" });
-    cloudinary.uploader.destroy(`whatsapp/${user.email}`, {
+  await User.findByIdAndUpdate(user._id, { pic: "" });
+  cloudinary.uploader
+    .destroy(`whatsapp/${user.email}`, {
       api_key: process.env.CLOUDINARY_KEY,
       api_secret: process.env.CLOUDINARY_SECRET,
       cloud_name: "kashish",
-    });
-    User.findById(user._id)
-      .populate("rooms")
-      .then((user) => res.send(user))
-      .catch((err) => console.log(err));
-  } catch (error) {
-    console.log(error);
-  }
+    })
+    .then(() => res.send("Profile picture updated successfully!!"))
+    .catch((err) => console.log(err));
 });
 
-router.put("/profileName", requireLogin, async (req, res) => {
-  const { user } = req;
-  try {
-    await User.findByIdAndUpdate(user._id, { name: req.body.name });
-    User.findById(user._id)
-      .populate("rooms")
-      .then((user) => res.send(user))
-      .catch((err) => console.log(err));
-  } catch (error) {
-    console.log(error);
-  }
-});
+// router.put("/profileName", requireLogin, async (req, res) => {
+//   const { user } = req;
+//   try {
+//     await User.findByIdAndUpdate(user._id, { name: req.body.name });
+//     User.findById(user._id)
+//       .populate("rooms")
+//       .then((user) => res.send(user))
+//       .catch((err) => console.log(err));
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
 export default router;

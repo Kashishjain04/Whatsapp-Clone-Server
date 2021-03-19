@@ -2,6 +2,7 @@ import express from "express";
 import requireLogin from "../middleware/requireLogin.js";
 import Rooms from "../models/rooms.js";
 import Users from "../models/user.js";
+import { v2 as cloudinary } from "cloudinary";
 
 // initialize router
 const router = express.Router();
@@ -42,7 +43,7 @@ router.post("/createRoom", requireLogin, (req, res) => {
           if (err) {
             return res.status(500).send(err);
           } else {
-            res.send("Room created Successfully!!");
+            res.send(room);
           }
         }
       );
@@ -71,7 +72,7 @@ router.post("/joinRoom", requireLogin, (req, res) => {
           if (err) {
             return res.status(500).send(err);
           } else {
-            res.send("Room Joined Successfully!!");
+            res.send(room);
           }
         }
       );
@@ -89,6 +90,26 @@ router.get("/getUserData", requireLogin, (req, res) => {
       res.send({ _id, email, name, pic, rooms });
     })
     .catch((err) => res.status(500).send(err.message));
+});
+
+router.put("/profileImage", requireLogin, async (req, res) => {
+  const { roomId } = req.body;
+  Rooms.findByIdAndUpdate(roomId, { pic: req.body.url })
+    .then(() => res.send("Profile picture updated successfully!!"))
+    .catch((err) => console.log(err));
+});
+
+router.delete("/profileImage", requireLogin, async (req, res) => {
+  const { roomId } = req.body;
+  await Rooms.findByIdAndUpdate(roomId, { pic: "" });
+  cloudinary.uploader
+    .destroy(`whatsapp/rooms/${roomId}`, {
+      api_key: process.env.CLOUDINARY_KEY,
+      api_secret: process.env.CLOUDINARY_SECRET,
+      cloud_name: "kashish",
+    })
+    .then(() => res.send("Profile picture updated successfully!!"))
+    .catch((err) => console.log(err));
 });
 
 export default router;
