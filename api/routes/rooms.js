@@ -8,7 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 const router = express.Router();
 
 router.post("/newMessage", requireLogin, (req, res) => {
-  const { message, timestamp } = req.body;
+  const { message, timestamp, type } = req.body;
   Rooms.findByIdAndUpdate(
     req.body.roomID,
     {
@@ -18,6 +18,7 @@ router.post("/newMessage", requireLogin, (req, res) => {
           userName: req.user.name,
           message,
           timestamp,
+          type,
         },
       },
     },
